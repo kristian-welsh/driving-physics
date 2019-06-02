@@ -7,7 +7,9 @@ package {
 	import flash.geom.Matrix;
 	import flash.geom.Rectangle;
 	
-	public class Car extends Bitmap {
+	public class Car extends Collidable {
+		private const WIDTH:Number = 66;
+		private const HEIGHT:Number = 100;
 		private const TURN_INCREMENT:Number = 0.05;
 		private const ACCELERATION:Number = 0.05;
 		private const DRAG:Number = ACCELERATION / 2;
@@ -18,10 +20,18 @@ package {
 		private var velocity:Number = 0;
 		private var angle:Number = 0;
 		
-		public function Car(width:Number, height:Number) {
-			data = new BitmapData(width, height, false, 0x555555);
-			drawDot(width / 2, height*(3/4));
-			super(data);
+		private var colliders:Vector.<Collidable>;
+		
+		public function Car(colliders:Vector.<Collidable>) {
+			this.colliders = colliders;
+			drawRect();
+			drawDot(WIDTH / 2, HEIGHT*(3/4));
+		}
+		
+		private function drawRect():void {
+			graphics.beginFill(0x555555);
+			graphics.drawRect(0, 0, WIDTH, HEIGHT);
+			graphics.endFill();
 		}
 		
 		private function drawDot(x:Number, y:Number):void {
@@ -29,7 +39,7 @@ package {
 			dot.graphics.beginFill(0x000000);
 			dot.graphics.drawCircle(x, y, 2);
 			dot.graphics.endFill();
-			data.draw(dot);
+			addChild(dot);
 		}
 		
 		public function accelerate():void {
@@ -89,6 +99,7 @@ package {
 			//ooh! i could handle bounces by having an array of forces being applied to the car. instead of just velocity
 			updateVelocity();
 			collide();
+			collideObjects();
 			updateposition();
 		}
 		
@@ -127,9 +138,9 @@ package {
 		}
 		
 		private function colliding():Boolean {
-			if (-top() > 0)
+			if (top() < 0)
 				return true;
-			if (-left() > 0)
+			if (left() < 0)
 				return true;
 			if (bottom() > stage.stageHeight)
 				return true;
@@ -137,8 +148,31 @@ package {
 				return true;
 			return false;
 		}
+		
+		private function collideObjects():void {
+			for (var i:int = 0; i < colliders.length; i++) {
+				collideObject(colliders[i]);
+			}
+		}
+		
+		// need to update to check before and after application of velocity to check for impending collision.
+		private function collideObject(obj:Collidable):void {
+			if (top() < obj.bottom())
+				return;
+			if (left() < obj.right())
+				return;
+			if (bottom() > obj.top())
+				return;
+			if (right() > obj.left())
+				return;
+		}
 	}
 }
+
+
+
+
+
 
 
 

@@ -12,14 +12,9 @@ package {
 		
 		private var timer:Timer = new Timer(1000/FPS);
 		private var keys:Object = { };
-		private var car:Car = new Car(66, 100);
+		private var car:Car;
 		
-		private var keyFunctions:Array = [
-			[KeyCodes.LEFT, car.turnLeft],
-			[KeyCodes.UP, car.accelerate],
-			[KeyCodes.RIGHT, car.turnRight],
-			[KeyCodes.DOWN, car.decelerate]
-		];
+		private var keyFunctions:Array;
 		
 		public function Main() {
 			if (stage) init();
@@ -34,10 +29,26 @@ package {
 			stage.addEventListener(KeyboardEvent.KEY_DOWN, keyDown);
 			stage.addEventListener(KeyboardEvent.KEY_UP, keyUp);
 			
+			var obstacles:Vector.<Collidable> = new Vector.<Collidable>();
+			obstacles.push(new Obstacle(stage, 300, 200));
+			
+			car = new Car(obstacles);
 			centre(car);
 			car.y = 750;
 			stage.addChild(car);
+			
+			assignKeyFunctions();
+			
 			timer.start();
+		}
+		
+		private function assignKeyFunctions():void {
+			keyFunctions = [
+				[KeyCodes.LEFT, car.turnLeft],
+				[KeyCodes.UP, car.accelerate],
+				[KeyCodes.RIGHT, car.turnRight],
+				[KeyCodes.DOWN, car.decelerate]
+			];
 		}
 		
 		private function keyDown(e:KeyboardEvent):void {
@@ -55,9 +66,8 @@ package {
 		
 		private function applyKeyFunctions():void {
 			for each (var elem:Array in keyFunctions) {
-				if (keys[elem[0]]) {
+				if (keys[elem[0]])
 					elem[1]();
-				}
 			}
 		}
 		
